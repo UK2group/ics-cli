@@ -16,7 +16,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.20
+          go-version: 1.24.1 
+
+      - name: Get module name
+        id: get_module
+        run: |
+          MODULE_NAME=$(grep -m 1 "module" go.mod | awk '{print $2}')
+          echo "module_name=$MODULE_NAME" >> $GITHUB_OUTPUT
+          echo "Using module name: $MODULE_NAME"
 
       - name: Build for multiple platforms
         run: |
@@ -28,11 +35,15 @@ jobs:
           # Get current commit hash
           COMMIT=$(git rev-parse HEAD)
           
+          # Use the correct module path from go.mod
+          MODULE_PATH="${{ steps.get_module.outputs.module_name }}/cmd"
+          echo "Using module path: $MODULE_PATH for version information"
+          
           # Build for different platforms
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
-          GOOS=darwin GOARCH=arm64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
+          GOOS=darwin GOARCH=arm64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
           
           # Generate checksums
           cd builds/
