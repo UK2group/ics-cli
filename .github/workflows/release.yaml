@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
       
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -19,10 +21,42 @@ jobs:
       - name: Build for multiple platforms
         run: |
           mkdir -p builds
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-macos-amd64 main.go
-          GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-macos-arm64 main.go
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-linux-amd64 main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-windows-amd64.exe main.go
+          # Extract version from tag (removes 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          # Get current timestamp
+          BUILDTIME=$(date -u '+%Y-%m-%d %H:%M:%S')
+          # Get current commit hash
+          COMMIT=$(git rev-parse HEAD)
+          
+          # Build for different platforms
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
+          GOOS=darwin GOARCH=arm64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X github.com/UK2Group/ics-cli/cmd.Version=$VERSION -X github.com/UK2Group/ics-cli/cmd.BuildTime='$BUILDTIME' -X github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
+          
+          # Generate checksums
+          cd builds/
+          sha256sum ics-cli-* > SHA256SUMS.txt
+          cd ..
+
+      - name: Generate Release Notes
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            # If there's no previous tag, include all commits
+            git log --pretty=format:"* %s (%h)" > RELEASE_NOTES.md
+          else
+            # Generate changelog from previous tag to current
+            echo "## Changes since $PREV_TAG" > RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            git log --pretty=format:"* %s (%h)" $PREV_TAG..HEAD >> RELEASE_NOTES.md
+          fi
+          
+          echo "" >> RELEASE_NOTES.md
+          echo "## Installation" >> RELEASE_NOTES.md
+          echo "Download the appropriate binary for your platform and add it to your PATH." >> RELEASE_NOTES.md
           
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -32,6 +66,10 @@ jobs:
             builds/ics-cli-macos-arm64
             builds/ics-cli-linux-amd64
             builds/ics-cli-windows-amd64.exe
+            builds/SHA256SUMS.txt
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
