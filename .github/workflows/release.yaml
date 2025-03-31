@@ -40,10 +40,10 @@ jobs:
           echo "Using module path: $MODULE_PATH for version information"
           
           # Build for different platforms
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
-          GOOS=darwin GOARCH=arm64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime='$BUILDTIME' -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
+          GOOS=darwin GOARCH=arm64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.Version=$VERSION -X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
           
           # Generate checksums
           cd builds/
