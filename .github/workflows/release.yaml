@@ -28,21 +28,39 @@ jobs:
       - name: Build for multiple platforms
         run: |
           mkdir -p builds
+          # Extract version from tag (removes 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Building version: $VERSION"
+          
           # Get current timestamp
           BUILDTIME=$(date -u '+%Y-%m-%d %H:%M:%S')
+          echo "Build time: $BUILDTIME"
+          
           # Get current commit hash
           COMMIT=$(git rev-parse HEAD)
+          echo "Commit: $COMMIT"
           
-          # Use the correct module path from go.mod
-          MODULE_PATH="${{ steps.get_module.outputs.module_name }}/cmd"
-          echo "Using module path: $MODULE_PATH for version information"
+          # Build for different platforms with simplified ldflags
+          echo "Building macOS (amd64)..."
+          GOOS=darwin GOARCH=amd64 go build \
+            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -o builds/ics-cli-macos-amd64
           
-          # Build for different platforms
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-amd64 main.go
-          GOOS=darwin GOARCH=arm64 go build -ldflags "-X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-macos-arm64 main.go
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-linux-amd64 main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X $MODULE_PATH.BuildTime=$BUILDTIME -X $MODULE_PATH.Commit=$COMMIT" -o builds/ics-cli-windows-amd64.exe main.go
+          echo "Building macOS (arm64)..."
+          GOOS=darwin GOARCH=arm64 go build \
+            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -o builds/ics-cli-macos-arm64
           
+          echo "Building Linux (amd64)..."
+          GOOS=linux GOARCH=amd64 go build \
+            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -o builds/ics-cli-linux-amd64
+          
+          echo "Building Windows (amd64)..."
+          GOOS=windows GOARCH=amd64 go build \
+            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -o builds/ics-cli-windows-amd64.exe
+            
           # Generate checksums
           cd builds/
           sha256sum ics-cli-* > SHA256SUMS.txt
