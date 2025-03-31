@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.20
+
+      - name: Build for multiple platforms
+        run: |
+          mkdir -p builds
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-macos-amd64 main.go
+          GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-macos-arm64 main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-linux-amd64 main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Version=${GITHUB_REF#refs/tags/v}" -o builds/ics-cli-windows-amd64.exe main.go
+          
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            builds/ics-cli-macos-amd64
+            builds/ics-cli-macos-arm64
+            builds/ics-cli-linux-amd64
+            builds/ics-cli-windows-amd64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
