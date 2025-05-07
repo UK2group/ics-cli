@@ -332,14 +332,14 @@ func setReboot(serverID string) (bool, error) {
 	return true, nil
 }
 
-// setReboot sends a power off
+// setRecovery boots to Rescue
 func setRecovery(serverID string) (bool, error) {
 	var response GenericServerResponse
 
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/power/off", serverID),
+		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/recovery/reboot", serverID),
 		nil,
 		&response,
 	)
