@@ -118,16 +118,16 @@ ics-cli baremetal order --sku c1i.small --datacenter NYC1 --os DEBIAN_11 --ssh-k
 
 ```bash
 # List all SSH keys
-ics-cli sshkey list
+ics-cli sshkeys list
 
 # Add a new SSH key
-ics-cli sshkey add --name "My New Key" --key "ssh-rsa AAAA..."
+ics-cli sshkeys add --name "My New Key" --key "ssh-rsa AAAA..."
 
 # Delete an SSH key
-ics-cli sshkey delete --name "My Old Key"
+ics-cli sshkeys delete --name "My Old Key"
 
 # Assign an SSH key to a server
-ics-cli sshkey assign --name "My Key" --server SERVER_ID
+ics-cli sshkeys assign --name "My Key" --server SERVER_ID
 ```
 
 ## Environment Variables
