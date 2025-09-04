@@ -48,14 +48,19 @@ var listCmd = &cobra.Command{
 				fmt.Printf("\nDatacenter: %s\n", datacenter)
 
 				// Build table header
-				tbl := table.New("Service ID", "Hostname", "Primary IP", "Friendly Name")
+				tbl := table.New("Service ID", "Hostname", "Primary IP", "Hourly Billing", "Friendly Name")
 				tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 				for _, server := range servers {
+					hourlyBilling := "No"
+					if server.HourlyBilling {
+						hourlyBilling = "Yes"
+					}
 
 					tbl.AddRow(server.ServiceID,
 						server.Hostname,
 						server.PublicIP,
+						hourlyBilling,
 						server.FriendlyName)
 
 				}
@@ -65,7 +70,7 @@ var listCmd = &cobra.Command{
 			}
 		} else {
 			// Build table header
-			tbl := table.New("Service ID", "Hostname", "Primary IP", "Datacenter", "Friendly Name")
+			tbl := table.New("Service ID", "Hostname", "Primary IP", "Datacenter", "Hourly Billing", "Friendly Name")
 			tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 			// Build each server in a row
@@ -75,10 +80,16 @@ var listCmd = &cobra.Command{
 					continue
 				}
 
+				hourlyBilling := "No"
+				if server.HourlyBilling {
+					hourlyBilling = "Yes"
+				}
+
 				tbl.AddRow(server.ServiceID,
 					server.Hostname,
 					server.PublicIP,
 					server.DatacenterName,
+					hourlyBilling,
 					server.FriendlyName)
 
 			}

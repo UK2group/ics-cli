@@ -13,8 +13,9 @@ ICS CLI provides a convenient way to manage your Ingenuity Cloud Services resour
 ## Features
 
 - **Baremetal Server Management**: List, deploy, power control, and manage your dedicated servers
+- **Hourly Billing Support**: Deploy servers with hourly billing and cancel hourly-billed servers
 - **SSH Key Management**: Create, list, and manage SSH keys for server access
-- **Inventory Browsing**: View available hardware in different datacenters
+- **Inventory Browsing**: View available hardware in different datacenters with hourly pricing options
 - **Add-on Management**: Browse and select operating systems, software licenses, and support levels
 
 ## Installation
@@ -105,13 +106,19 @@ ics-cli baremetal sol [ServiceID]
 
 ```bash
 # View available inventory
-ics-cli baremetal list-inventory --datacenter NYC1
+ics-cli baremetal deploy list-inventory --datacenter NYC1
 
 # Check available add-ons for a specific server type
-ics-cli baremetal list-addons --sku c1i.small --datacenter NYC1
+ics-cli baremetal deploy list-addons --sku c1i.small --datacenter NYC1
 
-# Order a new server
-ics-cli baremetal order --sku c1i.small --datacenter NYC1 --os DEBIAN_11 --ssh-keys "My Key"
+# Order a new server (monthly billing)
+ics-cli baremetal deploy create --sku c1i.small --datacenter NYC1 --os DEBIAN_11 --ssh-keys "My Key"
+
+# Order a server with hourly billing
+ics-cli baremetal deploy create --sku c1i.small --datacenter NYC1 --os DEBIAN_11 --bill-hourly
+
+# Order multiple servers with hourly billing and additional options
+ics-cli baremetal deploy create --sku c1.large --datacenter LHR1 --os UBUNTU_22_04 --quantity 2 --bill-hourly --ssh-keys "Production Key" --support BASICSUP
 ```
 
 ### SSH Key Management
@@ -128,6 +135,22 @@ ics-cli sshkeys delete --name "My Old Key"
 
 # Assign an SSH key to a server
 ics-cli sshkeys assign --name "My Key" --server SERVER_ID
+```
+
+### Hourly Billing Management
+
+```bash
+# View inventory with hourly pricing information
+ics-cli baremetal deploy list-inventory --hourly-enabled
+
+# Filter by hourly price range
+ics-cli baremetal deploy list-inventory --min-hourly-price 0.50 --max-hourly-price 2.00
+
+# Cancel an hourly-billed server (IRREVERSIBLE)
+ics-cli baremetal cancel [ServiceID]
+
+# Cancel with force flag (no confirmation prompts)
+ics-cli baremetal cancel [ServiceID] --force
 ```
 
 ## Environment Variables

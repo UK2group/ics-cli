@@ -24,12 +24,19 @@ Optional parameters include:
 --license Software licenses
 --bandwidth Additional bandwidth
 --support Support level
---quantity Quantity (defaults to 1)`,
+--quantity Quantity (defaults to 1)
+--bill-hourly Enable hourly billing (defaults to false)`,
 	Example: `  # Order a server with Debian 11
-  ics-cli baremetal create --sku c1.small --datacenter NYC1 --os DEBIAN_11
+  ics-cli baremetal deploy create --sku c1.small --datacenter NYC1 --os DEBIAN_11
   
   # Order a server with SSH keys and support
-  ics-cli baremetal create --sku c1.small --datacenter NYC1 --os DEBIAN_11 --ssh-keys "My Key,Work Key" --support BASICSUP`,
+  ics-cli baremetal deploy create --sku c1.small --datacenter NYC1 --os DEBIAN_11 --ssh-keys "My Key,Work Key" --support BASICSUP
+  
+  # Order a server with hourly billing enabled
+  ics-cli baremetal deploy create --sku c1.small --datacenter NYC1 --os DEBIAN_11 --bill-hourly
+  
+  # Order multiple servers with hourly billing, SSH keys, and support
+  ics-cli baremetal deploy create --sku c1.large --datacenter LHR1 --os UBUNTU_22_04 --quantity 2 --bill-hourly --ssh-keys "Production Key" --support BASICSUP`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Get required parameters
 		sku, _ := cmd.Flags().GetString("sku")
@@ -58,6 +65,7 @@ Optional parameters include:
 		bandwidthTB, _ := cmd.Flags().GetInt("bandwidth")
 		supportCode, _ := cmd.Flags().GetString("support")
 		sshKeysStr, _ := cmd.Flags().GetString("ssh-keys")
+		billHourly, _ := cmd.Flags().GetBool("bill-hourly")
 
 		// Default quantity to 1 if not specified
 		if quantity <= 0 {
@@ -70,6 +78,7 @@ Optional parameters include:
 			Quantity:                   quantity,
 			LocationCode:               datacenter,
 			OperatingSystemProductCode: osCode,
+			BillHourly:                 billHourly,
 		}
 
 		// Add optional parameters if provided
@@ -146,6 +155,7 @@ func init() {
 	bmdDeployCmd.Flags().Int("bandwidth", 0, "Additional bandwidth in TB")
 	bmdDeployCmd.Flags().String("support", "", "Support level product code (e.g., BASICSUP)")
 	bmdDeployCmd.Flags().String("ssh-keys", "", "Comma-separated list of SSH key names to assign")
+	bmdDeployCmd.Flags().Bool("bill-hourly", false, "Enable hourly billing (default: false for monthly billing)")
 
 	// Mark required flags
 	bmdDeployCmd.MarkFlagRequired("sku")

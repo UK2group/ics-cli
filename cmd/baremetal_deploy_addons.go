@@ -20,11 +20,15 @@ var bmdAddonsCmd = &cobra.Command{
 
 You must specify both the SKU (server type) and datacenter location.`,
 	Example: `  # List all add-ons for a specific server type in a location
-  ics-cli baremetal list-addons --sku c1.small --datacenter NYC1`,
+  ics-cli baremetal deploy list-addons --sku c1.small --datacenter NYC1
+
+  # List only hourly-enabled add-ons
+  ics-cli baremetal deploy list-addons --sku c1.small --datacenter NYC1 --hourly-enabled`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Get required parameters
 		sku, _ := cmd.Flags().GetString("sku")
 		datacenter, _ := cmd.Flags().GetString("datacenter")
+		hourlyEnabled, _ := cmd.Flags().GetBool("hourly-enabled")
 
 		// Validate required parameters
 		if sku == "" {
@@ -51,89 +55,119 @@ You must specify both the SKU (server type) and datacenter location.`,
 
 		// Display Operating Systems
 		if len(addons.Data.OperatingSystems.Products) > 0 {
-			fmt.Println(headerText("\n%s", addons.Data.OperatingSystems.Name))
-
-			// Create table for Operating Systems
-			osTbl := table.New("Name", "Type", "Product Code", "Price")
-			osTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-			// Add each OS to the table
+			// Filter operating systems if hourly-enabled flag is set
+			var filteredOSProducts []OSProduct
 			for _, os := range addons.Data.OperatingSystems.Products {
-				// Format price
-				priceStr := "Free"
-				if os.Price > 0 {
-					priceStr = "$" + fmt.Sprintf("%.2f", os.Price) + " /mo"
+				if !hourlyEnabled || os.HourlyEnabled {
+					filteredOSProducts = append(filteredOSProducts, os)
 				}
-
-				// Check if price is per core
-				if os.PricePerCore != nil {
-					if perCore, ok := os.PricePerCore.(float64); ok && perCore > 0 {
-						priceStr = fmt.Sprintf("$%.2f per core", perCore) + " /mo"
-					}
-				}
-
-				osTbl.AddRow(
-					os.Name,
-					os.OSType,
-					os.ProductCode,
-					priceStr,
-				)
 			}
 
-			osTbl.Print()
+			if len(filteredOSProducts) > 0 {
+				fmt.Println(headerText("\n%s", addons.Data.OperatingSystems.Name))
+
+				// Create table for Operating Systems
+				osTbl := table.New("Name", "Type", "Product Code", "Price")
+				osTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+				// Add each OS to the table
+				for _, os := range filteredOSProducts {
+					// Format price
+					priceStr := "Free"
+					if os.Price > 0 {
+						priceStr = "$" + fmt.Sprintf("%.2f", os.Price) + " /mo"
+					}
+
+					// Check if price is per core
+					if os.PricePerCore != nil {
+						if perCore, ok := os.PricePerCore.(float64); ok && perCore > 0 {
+							priceStr = fmt.Sprintf("$%.2f per core", perCore) + " /mo"
+						}
+					}
+
+					osTbl.AddRow(
+						os.Name,
+						os.OSType,
+						os.ProductCode,
+						priceStr,
+					)
+				}
+
+				osTbl.Print()
+			}
 		}
 
 		// Display Licenses
 		if len(addons.Data.Licenses.Products) > 0 {
-			fmt.Println(headerText("\n%s", addons.Data.Licenses.Name))
-
-			// Create table for Licenses
-			licTbl := table.New("Name", "Product Code", "Price")
-			licTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-			// Add each license to the table
+			// Filter licenses if hourly-enabled flag is set
+			var filteredLicenseProducts []LicenseProduct
 			for _, lic := range addons.Data.Licenses.Products {
-				// Format price
-				priceStr := "Free"
-				if lic.Price > 0 {
-					priceStr = "$" + fmt.Sprintf("%.2f", lic.Price) + " /mo"
+				if !hourlyEnabled || lic.HourlyEnabled {
+					filteredLicenseProducts = append(filteredLicenseProducts, lic)
 				}
-
-				licTbl.AddRow(
-					lic.Name,
-					lic.ProductCode,
-					priceStr,
-				)
 			}
 
-			licTbl.Print()
+			if len(filteredLicenseProducts) > 0 {
+				fmt.Println(headerText("\n%s", addons.Data.Licenses.Name))
+
+				// Create table for Licenses
+				licTbl := table.New("Name", "Product Code", "Price")
+				licTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+				// Add each license to the table
+				for _, lic := range filteredLicenseProducts {
+					// Format price
+					priceStr := "Free"
+					if lic.Price > 0 {
+						priceStr = "$" + fmt.Sprintf("%.2f", lic.Price) + " /mo"
+					}
+
+					licTbl.AddRow(
+						lic.Name,
+						lic.ProductCode,
+						priceStr,
+					)
+				}
+
+				licTbl.Print()
+			}
 		}
 
 		// Display Support Levels
 		if len(addons.Data.SupportLevels.Products) > 0 {
-			fmt.Println(headerText("\n%s", addons.Data.SupportLevels.Name))
-
-			// Create table for Support Levels
-			supTbl := table.New("Name", "Description", "Product Code", "Price")
-			supTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-			// Add each support level to the table
+			// Filter support levels if hourly-enabled flag is set
+			var filteredSupportProducts []SupportProduct
 			for _, sup := range addons.Data.SupportLevels.Products {
-				// Format price
-				priceStr := "Free"
-				if sup.Price > 0 {
-					priceStr = "$" + fmt.Sprintf("%.2f", sup.Price) + " /mo"
+				if !hourlyEnabled || sup.HourlyEnabled {
+					filteredSupportProducts = append(filteredSupportProducts, sup)
 				}
-
-				supTbl.AddRow(
-					sup.Name,
-					sup.Description,
-					sup.ProductCode,
-					priceStr,
-				)
 			}
 
-			supTbl.Print()
+			if len(filteredSupportProducts) > 0 {
+				fmt.Println(headerText("\n%s", addons.Data.SupportLevels.Name))
+
+				// Create table for Support Levels
+				supTbl := table.New("Name", "Description", "Product Code", "Price")
+				supTbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+				// Add each support level to the table
+				for _, sup := range filteredSupportProducts {
+					// Format price
+					priceStr := "Free"
+					if sup.Price > 0 {
+						priceStr = "$" + fmt.Sprintf("%.2f", sup.Price) + " /mo"
+					}
+
+					supTbl.AddRow(
+						sup.Name,
+						sup.Description,
+						sup.ProductCode,
+						priceStr,
+					)
+				}
+
+				supTbl.Print()
+			}
 		}
 	},
 }
@@ -144,6 +178,7 @@ func init() {
 	// Add required flags
 	bmdAddonsCmd.Flags().String("sku", "", "Server type/SKU (required, e.g., c1.small)")
 	bmdAddonsCmd.Flags().String("datacenter", "", "Datacenter location (required, e.g., NYC1)")
+	bmdAddonsCmd.Flags().Bool("hourly-enabled", false, "Show only addons with hourly billing enabled")
 
 	// Mark flags as required
 	bmdAddonsCmd.MarkFlagRequired("sku")
