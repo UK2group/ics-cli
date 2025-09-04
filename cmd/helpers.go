@@ -13,6 +13,22 @@ import (
 	"github.com/spf13/viper"
 )
 
+// getAPIBaseURL returns the base API URL from configuration or environment variable
+func getAPIBaseURL() string {
+	// Check environment variable first
+	if apiURL := viper.GetString("ICS_API_URL"); apiURL != "" {
+		return apiURL
+	}
+	
+	// Check config file
+	if apiURL := viper.GetString("api_url"); apiURL != "" {
+		return apiURL
+	}
+	
+	// Default to production URL
+	return "https://api.ingenuitycloudservices.com"
+}
+
 // makeAPIRequest is a generic function to handle API calls with proper error handling
 func makeAPIRequest(method string, timeout time.Duration, url string, body io.Reader, result interface{}) error {
 

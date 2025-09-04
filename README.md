@@ -160,7 +160,33 @@ The CLI supports the following environment variables:
 | Variable | Description |
 |----------|-------------|
 | `ICS_API_KEY` | Your Ingenuity Cloud Services API key |
+| `ICS_API_URL` | Custom API base URL (defaults to `https://api.ingenuitycloudservices.com`) |
 | `ICS_CONFIG_FILE` | Custom path to config file |
+
+### Using Custom API Environments
+
+You can configure the CLI to work with different API environments (staging, testing, etc.) using the `ICS_API_URL` environment variable:
+
+```bash
+# Use staging environment
+export ICS_API_URL="https://staging-api.example.com"
+ics-cli baremetal list
+
+# Use local development environment
+export ICS_API_URL="http://localhost:8080"
+ics-cli auth check
+
+# Reset to production (or unset the variable)
+unset ICS_API_URL
+ics-cli baremetal list
+```
+
+Alternatively, you can set the `api_url` in your configuration file (`~/.ics-cli.yaml`):
+
+```yaml
+api_key: "your-api-key"
+api_url: "https://staging-api.example.com"
+```
 
 ## Contributing
 

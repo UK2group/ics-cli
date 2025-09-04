@@ -38,7 +38,7 @@ var loginCmd = &cobra.Command{
 
 		// Verify API key by making a test API call
 		client := &http.Client{Timeout: 10 * time.Second}
-		req, err := http.NewRequest("GET", "https://api.ingenuitycloudservices.com/rest-api/user/details", nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/rest-api/user/details", getAPIBaseURL()), nil)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error creating request:", err)
 			return
