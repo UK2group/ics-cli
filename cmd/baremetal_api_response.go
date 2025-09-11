@@ -1,5 +1,45 @@
 package cmd
 
+import (
+	"encoding/json"
+	"strconv"
+)
+
+// FlexibleID is a custom type that can unmarshal both string and numeric JSON values
+type FlexibleID struct {
+	value string
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (f *FlexibleID) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as string first
+	var strVal string
+	if err := json.Unmarshal(data, &strVal); err == nil {
+		f.value = strVal
+		return nil
+	}
+	
+	// If that fails, try to unmarshal as number
+	var numVal json.Number
+	if err := json.Unmarshal(data, &numVal); err == nil {
+		f.value = string(numVal)
+		return nil
+	}
+	
+	// If both fail, return error
+	return json.Unmarshal(data, &f.value)
+}
+
+// String returns the string representation of the ID
+func (f FlexibleID) String() string {
+	return f.value
+}
+
+// Int returns the integer representation of the ID
+func (f FlexibleID) Int() (int, error) {
+	return strconv.Atoi(f.value)
+}
+
 // ServerResponse represents the server list API response.
 // This is returned when listing all servers.
 type ServerResponse struct {
@@ -19,6 +59,7 @@ type Server struct {
 	DatacenterName string `json:"datacenter_name"` // Name of the datacenter where the server is located
 	FriendlyName   string `json:"friendly_name"`   // User-defined friendly name for the server
 	ServerType     string `json:"server_type"`     // Type of server (e.g., "dedicated", "cloud")
+	HourlyBilling  bool   `json:"hourly_billing"`  // Whether hourly billing is enabled for this server
 }
 
 // ServerDetailResponse represents the server detail API response.
@@ -35,14 +76,16 @@ type ServerDetail struct {
 	Hostname                string `json:"hostname"`                  // Server hostname
 	MacAddress              string `json:"mac_address"`               // Primary MAC address of the server
 	PublicIP                string `json:"public_ip"`                 // Primary public IP address
-	ServiceID               int    `json:"service_id"`                // Service ID associated with the server
-	FriendlyName            string `json:"friendly_name"`             // User-defined friendly name for the server
-	ServerID                int    `json:"id"`                        // Unique identifier of the server
+	ServiceID               int        `json:"service_id"`                // Service ID associated with the server
+	FriendlyName            string     `json:"friendly_name"`             // User-defined friendly name for the server
+	ServerID                FlexibleID `json:"id"`                        // Unique identifier of the server
 	OperatingSystemID       string `json:"operatingSystemId"`         // ID of the installed operating system
 	OperatingSystemName     string `json:"operating_system"`          // Name of the installed operating system
 	OperatingSystemUsername string `json:"operating_system_user"`     // Username for OS login
 	OperatingSystemPassword string `json:"operating_system_password"` // Password for OS login
-	DatacenterName          string `json:"datacenter"`                // Name of the datacenter where the server is located
+	DatacenterName          string  `json:"datacenter"`                // Name of the datacenter where the server is located
+	HourlyBilling           bool    `json:"hourly_billing"`            // Whether hourly billing is enabled for this server
+	HourlyPrice             float64 `json:"hourly_price"`              // Hourly price when hourly billing is enabled
 
 	// IPAddresses contains all IP addresses assigned to the server
 	IPAddresses []struct {
@@ -177,6 +220,8 @@ type InventoryDetails struct {
 	CurrencyCode     string     `json:"currency_code"`
 	SkuProductName   string     `json:"sku_product_name"`
 	Price            string     `json:"price"`
+	HourlyEnabled    bool       `json:"hourly_enabled"`
+	HourlyPrice      string     `json:"price_hourly"`
 }
 
 // Metadata represents additional server information
@@ -191,6 +236,8 @@ type GroupedInventory struct {
 	LocationCode   string
 	SkuProductName string
 	Price          string
+	HourlyEnabled  bool
+	HourlyPrice    string
 	TotalQuantity  int
 }
 
@@ -222,6 +269,8 @@ type OSProduct struct {
 	ProductCode  string      `json:"product_code"`
 	Price        float64     `json:"price"`
 	PricePerCore interface{} `json:"price_per_core"`
+	HourlyEnabled bool       `json:"hourly_enabled"`
+	HourlyPrice   float64    `json:"hourly_price"`
 }
 
 // LicenseSection contains license options
@@ -232,9 +281,11 @@ type LicenseSection struct {
 
 // LicenseProduct represents a license product
 type LicenseProduct struct {
-	Name        string  `json:"name"`
-	ProductCode string  `json:"product_code"`
-	Price       float64 `json:"price"`
+	Name          string  `json:"name"`
+	ProductCode   string  `json:"product_code"`
+	Price         float64 `json:"price"`
+	HourlyEnabled bool    `json:"hourly_enabled"`
+	HourlyPrice   float64 `json:"hourly_price"`
 }
 
 // SupportSection contains support options
@@ -245,10 +296,12 @@ type SupportSection struct {
 
 // SupportProduct represents a support product
 type SupportProduct struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	ProductCode string  `json:"product_code"`
-	Price       float64 `json:"price"`
+	Name          string  `json:"name"`
+	Description   string  `json:"description"`
+	ProductCode   string  `json:"product_code"`
+	Price         float64 `json:"price"`
+	HourlyEnabled bool    `json:"hourly_enabled"`
+	HourlyPrice   float64 `json:"hourly_price"`
 }
 
 // OrderRequest represents the request body for placing an order
@@ -261,6 +314,7 @@ type OrderRequest struct {
 	AdditionalBandwidthTB      int    `json:"additional_bandwidth_tb,omitempty"`
 	SupportLevelProductCode    string `json:"support_level_product_code,omitempty"`
 	SSHKeyIDs                  []int  `json:"ssh_key_ids,omitempty"`
+	BillHourly                 bool   `json:"bill_hourly,omitempty"`
 }
 
 // OrderResponse represents the response from the order API

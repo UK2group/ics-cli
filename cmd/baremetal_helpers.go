@@ -175,6 +175,9 @@ func getServerSSHKeys(serverID int) ([]AssignedSSHKey, error) {
 // Now update the printServerDetails function to include SSH keys
 func printServerDetails(cmd *cobra.Command, server *ServerDetail) {
 
+	// Convert ServerID to int for functions that need it
+	serverIDInt, serverIDErr := server.ServerID.Int()
+
 	// General Information Section
 	//fmt.Println(blue("=== SERVER INFORMATION ==="))
 	fmt.Printf("%s %s\n", BlueHeading("Server ID:"), WhiteText(strconv.Itoa(server.ServiceID)))
@@ -182,6 +185,17 @@ func printServerDetails(cmd *cobra.Command, server *ServerDetail) {
 	fmt.Printf("%s %s\n", BlueHeading("Friendly Name:"), WhiteText(server.FriendlyName))
 	fmt.Printf("%s %s\n", BlueHeading("Datacenter:"), WhiteText(server.DatacenterName))
 	fmt.Printf("%s %s\n", BlueHeading("Operating System:"), WhiteText(server.OperatingSystemName))
+	
+	// Only show hourly billing information when hourly_billing is true
+	if server.HourlyBilling {
+		fmt.Printf("%s %s\n", BlueHeading("Hourly Billing:"), WhiteText("Yes"))
+		
+		// Show hourly price if available
+		if server.HourlyPrice > 0 {
+			hourlyPrice := fmt.Sprintf("$%.2f", server.HourlyPrice)
+			fmt.Printf("%s %s\n", BlueHeading("Hourly Price:"), WhiteText(hourlyPrice))
+		}
+	}
 
 	// Network Information Section
 	fmt.Println(BlueHeading("\n=== NETWORK INFORMATION ==="))
@@ -206,21 +220,25 @@ func printServerDetails(cmd *cobra.Command, server *ServerDetail) {
 	fmt.Printf("%s %s\n", BlueHeading("Password:"), WhiteText(server.OperatingSystemPassword))
 
 	// Add SSH Keys section
-	sshKeys, err := getServerSSHKeys(server.ServerID)
-	if err == nil && len(sshKeys) > 0 {
-		// Create a slice to hold the key labels
-		keyLabels := make([]string, len(sshKeys))
-		for i, key := range sshKeys {
-			keyLabels[i] = key.Label
-		}
-
-		// Join the key labels with commas
-		fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), WhiteText(strings.Join(keyLabels, ", ")))
-	} else if err != nil {
-		// Optionally handle error silently or show a message
-		fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), RedText("Unable to retrieve SSH keys"))
+	if serverIDErr != nil {
+		fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), RedText("Unable to retrieve SSH keys (invalid server ID)"))
 	} else {
-		fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), WhiteText("None"))
+		sshKeys, err := getServerSSHKeys(serverIDInt)
+		if err == nil && len(sshKeys) > 0 {
+			// Create a slice to hold the key labels
+			keyLabels := make([]string, len(sshKeys))
+			for i, key := range sshKeys {
+				keyLabels[i] = key.Label
+			}
+
+			// Join the key labels with commas
+			fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), WhiteText(strings.Join(keyLabels, ", ")))
+		} else if err != nil {
+			// Optionally handle error silently or show a message
+			fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), RedText("Unable to retrieve SSH keys"))
+		} else {
+			fmt.Printf("%s %s\n", BlueHeading("Assigned SSH Keys:"), WhiteText("None"))
+		}
 	}
 
 	hidePowerStatus, _ := cmd.Flags().GetBool("power")
@@ -228,14 +246,18 @@ func printServerDetails(cmd *cobra.Command, server *ServerDetail) {
 		// Power Status Section
 		fmt.Println(BlueHeading("\n=== POWER STATUS ==="))
 
-		isPoweredOn, err := getPowerStatus(server.ServerID)
-		if err != nil {
-			fmt.Printf("%s %s\n", BlueHeading("Power State:"), RedText("UNKNOWN"))
+		if serverIDErr != nil {
+			fmt.Printf("%s %s\n", BlueHeading("Power State:"), RedText("UNKNOWN (invalid server ID)"))
 		} else {
-			if isPoweredOn {
-				fmt.Printf("%s %s\n", BlueHeading("Power State:"), GreenText("Powered On"))
+			isPoweredOn, err := getPowerStatus(serverIDInt)
+			if err != nil {
+				fmt.Printf("%s %s\n", BlueHeading("Power State:"), RedText("UNKNOWN"))
 			} else {
-				fmt.Printf("%s %s\n", BlueHeading("Power State:"), RedText("Powered Off"))
+				if isPoweredOn {
+					fmt.Printf("%s %s\n", BlueHeading("Power State:"), GreenText("Powered On"))
+				} else {
+					fmt.Printf("%s %s\n", BlueHeading("Power State:"), RedText("Powered Off"))
+				}
 			}
 		}
 	}
@@ -448,7 +470,7 @@ func getInventory() ([]InventoryDetails, error) {
 }
 
 // filterInventory applies filters to the inventory data
-func filterInventory(inventory []InventoryDetails, datacenter, sku string, minPrice, maxPrice float64) []InventoryDetails {
+func filterInventory(inventory []InventoryDetails, datacenter, sku string, minPrice, maxPrice, minHourlyPrice, maxHourlyPrice float64, hourlyEnabledOnly bool) []InventoryDetails {
 	filtered := make([]InventoryDetails, 0)
 
 	for _, item := range inventory {
@@ -470,6 +492,24 @@ func filterInventory(inventory []InventoryDetails, datacenter, sku string, minPr
 			}
 			if maxPrice > 0 && itemPrice > maxPrice {
 				continue
+			}
+		}
+
+		// Filter by hourly enabled status
+		if hourlyEnabledOnly && !item.HourlyEnabled {
+			continue
+		}
+
+		// Filter by hourly price (only if hourly billing is enabled for this item)
+		if item.HourlyEnabled && (minHourlyPrice > 0 || maxHourlyPrice > 0) {
+			itemHourlyPrice, err := strconv.ParseFloat(item.HourlyPrice, 64)
+			if err == nil {
+				if minHourlyPrice > 0 && itemHourlyPrice < minHourlyPrice {
+					continue
+				}
+				if maxHourlyPrice > 0 && itemHourlyPrice > maxHourlyPrice {
+					continue
+				}
 			}
 		}
 
@@ -500,6 +540,8 @@ func groupInventory(inventory []InventoryDetails) []GroupedInventory {
 				LocationCode:   item.LocationCode,
 				SkuProductName: item.SkuProductName,
 				Price:          item.Price,
+				HourlyEnabled:  item.HourlyEnabled,
+				HourlyPrice:    item.HourlyPrice,
 				TotalQuantity:  item.Quantity,
 			}
 		}
@@ -591,9 +633,40 @@ func confirmOrderDetails(order OrderRequest) bool {
 		fmt.Printf("%s %d\n", BlueHeading("SSH Keys:"), (order.SSHKeyIDs))
 	}
 
+	// Display billing type
+	billingType := "Monthly"
+	if order.BillHourly {
+		billingType = "Hourly"
+	}
+	fmt.Printf("%s %s\n", BlueHeading("Billing Type:"), WhiteText(billingType))
+
 	fmt.Printf("%s", BlueHeading("\nAre you sure you want to place this order? (y/N):"))
 	var response string
 	fmt.Scanln(&response)
 
 	return strings.ToLower(response) == "y" || strings.ToLower(response) == "yes"
+}
+
+// cancelHourlyServer cancels an hourly billed server
+func cancelHourlyServer(serverID string) (bool, error) {
+	var response GenericServerResponse
+
+	err := makeAPIRequest(
+		"DELETE",
+		60,
+		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/cancel", serverID),
+		nil,
+		&response,
+	)
+
+	if err != nil {
+		return false, fmt.Errorf("%w", err)
+	}
+
+	// Check for success
+	if !response.Data.Success {
+		return false, nil
+	}
+
+	return true, nil
 }
