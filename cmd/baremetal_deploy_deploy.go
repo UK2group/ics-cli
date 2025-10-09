@@ -11,7 +11,7 @@ import (
 // bmdDeployCmd represents the order command
 var bmdDeployCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a new Baremetal Server Order",
+	Short: "Create a new Bare Metal Server Order",
 	Long: `Create a new Baremetal Server order with the specified configuration.
     
 Required parameters include:

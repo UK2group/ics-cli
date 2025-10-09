@@ -15,7 +15,7 @@ func getSSHKeyFromLabel(sshKeyLabel string) (*SSHKey, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		"https://api.ingenuitycloudservices.com/rest-api/ssh-keys",
+		fmt.Sprintf("%s/rest-api/ssh-keys", getAPIBaseURL()),
 		nil,
 		&sshKeyList,
 	)
@@ -69,7 +69,7 @@ func addSSHKey(requestData map[string]string) (bool, error) {
 	err = makeAPIRequest(
 		"POST",
 		60,
-		"https://api.ingenuitycloudservices.com/rest-api/ssh-keys",
+		fmt.Sprintf("%s/rest-api/ssh-keys", getAPIBaseURL()),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -88,7 +88,7 @@ func deleteSSHKey(keyID int) (bool, error) {
 	err := makeAPIRequest(
 		"DELETE",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/ssh-keys/%d", keyID),
+		fmt.Sprintf("%s/rest-api/ssh-keys/%d", getAPIBaseURL(), keyID),
 		nil,
 		&response,
 	)
@@ -107,7 +107,7 @@ func getSSHKeys() ([]SSHKey, error) {
 	err := makeAPIRequest(
 		"GET",
 		60,
-		"https://api.ingenuitycloudservices.com/rest-api/ssh-keys",
+		fmt.Sprintf("%s/rest-api/ssh-keys", getAPIBaseURL()),
 		nil,
 		&response,
 	)
@@ -136,7 +136,7 @@ func setSSHKeyLabel(keyID int, newName string) (bool, error) {
 	err = makeAPIRequest(
 		"PUT",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/ssh-keys/%d", keyID),
+		fmt.Sprintf("%s/rest-api/ssh-keys/%d", getAPIBaseURL(), keyID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -167,7 +167,7 @@ func assignSSHKeys(serverID string, keyIDs []int) (bool, error) {
 	err = makeAPIRequest(
 		"PATCH",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/ssh-keys/assign", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/ssh-keys/assign", getAPIBaseURL(), serverID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -176,7 +176,7 @@ func assignSSHKeys(serverID string, keyIDs []int) (bool, error) {
 		return false, fmt.Errorf("failed to assign SSH keys: %w", err)
 	}
 
-	return response.Data, nil
+	return len(response.Data) > 0, nil
 }
 
 // unassignSSHKey sends a request to unassign an SSH key from a server
@@ -198,7 +198,7 @@ func unassignSSHKey(serverID string, keyID int) (bool, error) {
 	err = makeAPIRequest(
 		"PATCH",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/ssh-keys/un-assign", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/ssh-keys/un-assign", getAPIBaseURL(), serverID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)

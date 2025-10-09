@@ -10,7 +10,7 @@ import (
 // updateCmd represents the update command
 var sshKeyUnassignCmd = &cobra.Command{
 	Use:   "unassign [sshKeyName]",
-	Short: "Unassign an existing SSH Key from a Baremetal Server",
+	Short: "Unassign an existing SSH Key from a Bare Metal Server",
 	Example: `
   # Unassign an existing SSH Key from a Baremetal Server with Service ID 123456
   ics-cli sshkeys unassign my-ssh-key --server 123456`,

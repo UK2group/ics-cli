@@ -14,7 +14,7 @@ import (
 // inventoryCmd represents the inventory command
 var bmdInventoryCmd = &cobra.Command{
 	Use:   "list-inventory",
-	Short: "List available Baremetal Server inventory",
+	Short: "List available Bare Metal Server inventory",
 	Long: `Display available Baremetal Server inventory grouped by location and server type.
 Shows the total quantity available, location, server type, monthly pricing, hourly billing availability, and hourly pricing.
 

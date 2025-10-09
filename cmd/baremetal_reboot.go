@@ -11,7 +11,7 @@ import (
 // rebootCmd represents the reboot command
 var rebootCmd = &cobra.Command{
 	Use:   "reboot [serviceID]",
-	Short: "Reboot a baremetal server",
+	Short: "Reboot a Bare Metal server",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 

@@ -26,7 +26,7 @@ var checkCmd = &cobra.Command{
 
 		// Make API call to verify the connection
 		client := &http.Client{Timeout: 10 * time.Second}
-		req, err := http.NewRequest("GET", "https://api.ingenuitycloudservices.com/rest-api/user/details", nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/rest-api/user/details", getAPIBaseURL()), nil)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error creating request:", err)
 			return

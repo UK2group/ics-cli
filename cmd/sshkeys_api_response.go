@@ -50,9 +50,18 @@ type SSHKeyDeleteResponse struct {
 // SSHKeyAssignResponse represents the response from assigning an SSH key to a server.
 // This is returned when adding an SSH key to a specific server.
 type SSHKeyAssignResponse struct {
-	StatusCode int    `json:"statusCode"` // HTTP status code returned by the API
-	Message    string `json:"message"`    // Human-readable message about the response
-	Data       bool   `json:"data"`       // Success indicator (true if assignment was successful)
+	StatusCode int       `json:"statusCode"` // HTTP status code returned by the API
+	Message    string    `json:"message"`    // Human-readable message about the response
+	Data       []SSHKeyAssignData  `json:"data"`       // Array of assigned SSH keys with basic info
+}
+
+// SSHKeyAssignData represents a simplified SSH key in the assign response
+type SSHKeyAssignData struct {
+	ID        int    `json:"id"`         // SSH key ID
+	Label     string `json:"label"`      // SSH key label
+	Key       string `json:"key"`        // SSH public key content
+	CreatedAt int64  `json:"created_at"` // Unix timestamp when created
+	UpdatedAt int64  `json:"updated_at"` // Unix timestamp when updated
 }
 
 // SSHKeyUnassignResponse represents the response from removing an SSH key from a server.

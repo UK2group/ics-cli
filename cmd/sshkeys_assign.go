@@ -11,7 +11,7 @@ import (
 // updateCmd represents the update command
 var sshKeyAssignCmd = &cobra.Command{
 	Use:   "assign [sshKeyName]",
-	Short: "Assign an existing SSH Key to a Baremetal Server",
+	Short: "Assign an existing SSH Key to a Bare Metal Server",
 	Example: `
   # Assign an existing SSH Key to a Baremetal Server with Service ID 123456
   ics-cli sshkeys assign my-ssh-key --server 123456`,
@@ -61,7 +61,7 @@ var sshKeyAssignCmd = &cobra.Command{
 		sshKeyIDs = append(sshKeyIDs, sshKey.ID)
 
 		// Assign the SSH Key to the Server
-		assignKey, err := assignSSHKeys(serviceID, sshKeyIDs)
+		assignKey, err := assignSSHKeys(serverID, sshKeyIDs)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error assigning SSH Key:", err)
 			return

@@ -12,7 +12,7 @@ import (
 // bmdAddonsCmd represents the list-addons command
 var bmdAddonsCmd = &cobra.Command{
 	Use:   "list-addons",
-	Short: "List available add-ons for a Baremetal Server",
+	Short: "List available add-ons for a Bare Metal Server",
 	Long: `Display available add-ons for a Baremetal Server including:
 - Operating Systems
 - Software Licenses
