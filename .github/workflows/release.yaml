@@ -40,25 +40,25 @@ jobs:
           COMMIT=$(git rev-parse HEAD)
           echo "Commit: $COMMIT"
           
-          # Build for different platforms with simplified ldflags
+          # Build for different platforms with correct package path for ldflags
           echo "Building macOS (amd64)..."
           GOOS=darwin GOARCH=amd64 go build \
-            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -ldflags="-X 'github.com/UK2Group/ics-cli/cmd.Version=$VERSION' -X 'github.com/UK2Group/ics-cli/cmd.BuildTime=$BUILDTIME' -X 'github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT'" \
             -o builds/ics-cli-macos-amd64
-          
+
           echo "Building macOS (arm64)..."
           GOOS=darwin GOARCH=arm64 go build \
-            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -ldflags="-X 'github.com/UK2Group/ics-cli/cmd.Version=$VERSION' -X 'github.com/UK2Group/ics-cli/cmd.BuildTime=$BUILDTIME' -X 'github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT'" \
             -o builds/ics-cli-macos-arm64
-          
+
           echo "Building Linux (amd64)..."
           GOOS=linux GOARCH=amd64 go build \
-            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -ldflags="-X 'github.com/UK2Group/ics-cli/cmd.Version=$VERSION' -X 'github.com/UK2Group/ics-cli/cmd.BuildTime=$BUILDTIME' -X 'github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT'" \
             -o builds/ics-cli-linux-amd64
-          
+
           echo "Building Windows (amd64)..."
           GOOS=windows GOARCH=amd64 go build \
-            -ldflags="-X 'main.Version=$VERSION' -X 'main.BuildTime=$BUILDTIME' -X 'main.Commit=$COMMIT'" \
+            -ldflags="-X 'github.com/UK2Group/ics-cli/cmd.Version=$VERSION' -X 'github.com/UK2Group/ics-cli/cmd.BuildTime=$BUILDTIME' -X 'github.com/UK2Group/ics-cli/cmd.Commit=$COMMIT'" \
             -o builds/ics-cli-windows-amd64.exe
             
           # Generate checksums
