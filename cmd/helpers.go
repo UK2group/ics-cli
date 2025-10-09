@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
 	"runtime"
 	"time"
@@ -12,6 +13,17 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
+
+// getAPIBaseURL returns the base API URL
+func getAPIBaseURL() string {
+	// Check environment variable if set
+	if apiURL := os.Getenv("ICS_API_URL"); apiURL != "" {
+		return apiURL
+	}
+
+	// Default to production URL
+	return "https://api.ingenuitycloudservices.com"
+}
 
 // makeAPIRequest is a generic function to handle API calls with proper error handling
 func makeAPIRequest(method string, timeout time.Duration, url string, body io.Reader, result interface{}) error {

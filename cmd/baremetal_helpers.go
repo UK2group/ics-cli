@@ -19,7 +19,7 @@ func getServerIDFromServiceID(serviceID string) (string, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		"https://api.ingenuitycloudservices.com/rest-api/servers",
+		fmt.Sprintf("%s/rest-api/servers", getAPIBaseURL()),
 		nil,
 		&serverList,
 	)
@@ -45,7 +45,7 @@ func getIkvmResponse(serverID string) (string, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/remote-access/ikvm", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/remote-access/ikvm", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -74,7 +74,7 @@ func setPXEUrl(serverID, url string) (bool, error) {
 	err = makeAPIRequest(
 		"PUT",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/set-pxe", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/set-pxe", getAPIBaseURL(), serverID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -103,7 +103,7 @@ func setFriendlyName(serverID, name string) (bool, error) {
 	err = makeAPIRequest(
 		"PUT",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/friendly-name", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/friendly-name", getAPIBaseURL(), serverID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -122,7 +122,7 @@ func getServerDetails(serverID string) (*ServerDetail, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -141,7 +141,7 @@ func getPowerStatus(serverID int) (bool, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%d/power/status", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%d/power/status", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -160,7 +160,7 @@ func getServerSSHKeys(serverID int) ([]AssignedSSHKey, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%d/ssh-keys", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%d/ssh-keys", getAPIBaseURL(), serverID),
 		nil,
 		&keysResponse,
 	)
@@ -270,7 +270,7 @@ func getServerList() ([]Server, error) {
 	err := makeAPIRequest(
 		"GET",
 		30,
-		"https://api.ingenuitycloudservices.com/rest-api/servers",
+		fmt.Sprintf("%s/rest-api/servers", getAPIBaseURL()),
 		nil, // no request body for GET
 		&serverResp,
 	)
@@ -289,7 +289,7 @@ func setPowerOff(serverID string) (bool, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/power/off", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/power/off", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -313,7 +313,7 @@ func setPowerOn(serverID string) (bool, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/power/on", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/power/on", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -337,7 +337,7 @@ func setReboot(serverID string) (bool, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/power/reboot", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/power/reboot", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -361,7 +361,7 @@ func setRecovery(serverID string) (bool, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/recovery/reboot", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/recovery/reboot", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -385,7 +385,7 @@ func getSolResponse(serverID string) (string, error) {
 	err := makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/remote-access/sol", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/remote-access/sol", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -404,7 +404,7 @@ func getOSList(serverID string) ([]OS, error) {
 	err := makeAPIRequest(
 		"GET",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/provision/os-list", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/provision/os-list", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
@@ -433,7 +433,7 @@ func setReinstallOS(serverID, reason, imageId string) (bool, error) {
 	err = makeAPIRequest(
 		"POST",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/provision/reload-os", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/provision/reload-os", getAPIBaseURL(), serverID),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -457,7 +457,7 @@ func getInventory() ([]InventoryDetails, error) {
 	err := makeAPIRequest(
 		"GET",
 		60,
-		"https://api.ingenuitycloudservices.com/rest-api/server-orders/inventory",
+		fmt.Sprintf("%s/rest-api/server-orders/inventory", getAPIBaseURL()),
 		nil,
 		&response,
 	)
@@ -571,7 +571,7 @@ func getAddons(sku, datacenter string) (AddonsResponse, error) {
 	err := makeAPIRequest(
 		"GET",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/server-orders/list-addons?sku_product_name=%s&location_code=%s", sku, datacenter),
+		fmt.Sprintf("%s/rest-api/server-orders/list-addons?sku_product_name=%s&location_code=%s", getAPIBaseURL(), sku, datacenter),
 		nil,
 		&response,
 	)
@@ -597,7 +597,7 @@ func placeOrder(order OrderRequest) (OrderResponse, error) {
 	err = makeAPIRequest(
 		"POST",
 		60,
-		"https://api.ingenuitycloudservices.com/rest-api/server-orders/order",
+		fmt.Sprintf("%s/rest-api/server-orders/order", getAPIBaseURL()),
 		bytes.NewBuffer(requestBody),
 		&response,
 	)
@@ -654,7 +654,7 @@ func cancelHourlyServer(serverID string) (bool, error) {
 	err := makeAPIRequest(
 		"DELETE",
 		60,
-		fmt.Sprintf("https://api.ingenuitycloudservices.com/rest-api/servers/%s/cancel", serverID),
+		fmt.Sprintf("%s/rest-api/servers/%s/cancel", getAPIBaseURL(), serverID),
 		nil,
 		&response,
 	)
