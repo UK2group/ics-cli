@@ -12,7 +12,7 @@ import (
 var bmstatusCmd = &cobra.Command{
 	Use:     "get [serviceID]",
 	Aliases: []string{"status"},
-	Short:   "Get the information of a Baremetal Server by its Service ID",
+	Short:   "Get the information of a Bare Metal Server by its Service ID",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 

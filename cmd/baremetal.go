@@ -8,7 +8,7 @@ import (
 var baremetalCmd = &cobra.Command{
 	Use:     "baremetal",
 	Aliases: []string{"bm", "metal"},
-	Short:   "Create, Destroy and Manage Baremetal Servers",
+	Short:   "Create, Destroy and Manage Bare Metal Servers",
 }
 
 func init() {

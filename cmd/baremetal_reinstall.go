@@ -11,7 +11,7 @@ import (
 // bmReinstall represents the reinstall
 var bmReinstallCmd = &cobra.Command{
 	Use:   "reinstall [serviceID]",
-	Short: "Reinstall the operation system on a Baremetal Server",
+	Short: "Reinstall the operation system on a Bare Metal Server",
 	Example: `  
   # Reinstall Ubuntu 24.04 on a Baremetal Server with service ID 123456
   ics-cli baremetal reinstall 123456 --operatingsystem ubuntu-24-04 --reason "Reinstalling OS"`,

@@ -11,7 +11,7 @@ import (
 // bmCancelCmd represents the cancel command for hourly billed servers
 var bmCancelCmd = &cobra.Command{
 	Use:   "cancel [serviceID]",
-	Short: "Cancel an hourly billed Baremetal Server",
+	Short: "Cancel an hourly billed Bare Metal Server",
 	Long: `Cancel an hourly billed Baremetal Server. This command will immediately terminate
 the server and stop hourly billing. This action is irreversible.
 

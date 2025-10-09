@@ -14,7 +14,7 @@ import (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "List all baremetal servers in your account",
+	Short:   "List all Bare Metal servers in your account",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Make API call to fetch server list

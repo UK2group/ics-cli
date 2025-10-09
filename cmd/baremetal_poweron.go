@@ -11,7 +11,7 @@ import (
 // poweroffCmd represents the poweroff command
 var poweronCmd = &cobra.Command{
 	Use:   "poweron [serviceID]",
-	Short: "Power on a baremetal server",
+	Short: "Power on a Bare Metal server",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 

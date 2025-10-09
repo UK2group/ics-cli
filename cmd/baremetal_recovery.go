@@ -11,7 +11,7 @@ import (
 // recoveryCmd represents the reboot command
 var recoveryCmd = &cobra.Command{
 	Use:   "recovery [serviceID]",
-	Short: "Boot a baremetal server into a recovery image",
+	Short: "Boot a Bare Metal server into a recovery image",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
