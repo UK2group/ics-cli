@@ -41,9 +41,9 @@ var solCmd = &cobra.Command{
 		// Print the SOL access link
 		fmt.Printf("%s %s\n", BlueHeading("SOL Access Link:"), WhiteText(solLink))
 
-		// If --open flag is specified, try to open the link in a browser
+		// If --browser flag is specified, try to open the link in a browser
 		openInBrowser, _ := cmd.Flags().GetBool("browser")
-		if !openInBrowser {
+		if openInBrowser {
 			fmt.Println("Opening SOL access link in your default browser...")
 			err := openBrowser(solLink)
 			if err != nil {
