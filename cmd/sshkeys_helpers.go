@@ -176,7 +176,7 @@ func assignSSHKeys(serverID string, keyIDs []int) (bool, error) {
 		return false, fmt.Errorf("failed to assign SSH keys: %w", err)
 	}
 
-	return response.Data, nil
+	return len(response.Data) > 0, nil
 }
 
 // unassignSSHKey sends a request to unassign an SSH key from a server

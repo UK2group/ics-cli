@@ -61,7 +61,7 @@ var sshKeyAssignCmd = &cobra.Command{
 		sshKeyIDs = append(sshKeyIDs, sshKey.ID)
 
 		// Assign the SSH Key to the Server
-		assignKey, err := assignSSHKeys(serviceID, sshKeyIDs)
+		assignKey, err := assignSSHKeys(serverID, sshKeyIDs)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error assigning SSH Key:", err)
 			return
