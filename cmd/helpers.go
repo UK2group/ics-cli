@@ -43,6 +43,9 @@ func makeAPIRequest(method string, timeout time.Duration, url string, body io.Re
 	}
 
 	req.Header.Add("X-Api-Token", apiKey)
+	if body != nil {
+		req.Header.Add("Content-Type", "application/json")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -50,24 +53,41 @@ func makeAPIRequest(method string, timeout time.Duration, url string, body io.Re
 	}
 	defer resp.Body.Close()
 
-	// Handle status codes
-	switch resp.StatusCode {
-	case http.StatusUnauthorized:
-		return fmt.Errorf("API key is invalid or expired")
-	case http.StatusNotFound:
-		return fmt.Errorf("resource not found: %s", url)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("API returned error status code: %d", resp.StatusCode)
-	}
-
-	// Read and parse the response
+	// Read the response body first
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading API response: %w", err)
 	}
 
+	// Handle status codes
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusCreated:
+		// Success - continue to parse response
+	case http.StatusUnauthorized:
+		return fmt.Errorf("API key is invalid or expired")
+	case http.StatusNotFound:
+		return fmt.Errorf("resource not found: %s", url)
+	case http.StatusBadRequest:
+		// Try to extract error message from response
+		var errorResp struct {
+			Message string `json:"message"`
+		}
+		if err := json.Unmarshal(respBody, &errorResp); err == nil && errorResp.Message != "" {
+			return fmt.Errorf("%s", errorResp.Message)
+		}
+		return fmt.Errorf("API returned bad request (400)")
+	default:
+		// Try to extract error message from response for other error codes
+		var errorResp struct {
+			Message string `json:"message"`
+		}
+		if err := json.Unmarshal(respBody, &errorResp); err == nil && errorResp.Message != "" {
+			return fmt.Errorf("API error (status %d): %s", resp.StatusCode, errorResp.Message)
+		}
+		return fmt.Errorf("API returned error status code: %d", resp.StatusCode)
+	}
+
+	// Parse the response
 	if err := json.Unmarshal(respBody, result); err != nil {
 		return fmt.Errorf("error parsing API response: %w", err)
 	}
