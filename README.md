@@ -8,11 +8,12 @@ A powerful command-line interface for managing Ingenuity Cloud Services resource
 
 ## Overview
 
-ICS CLI provides a convenient way to manage your Ingenuity Cloud Services resources through a simple command-line interface. It allows you to provision and manage baremetal servers and more without needing to use the web interface.
+ICS CLI provides a convenient way to manage your Ingenuity Cloud Services resources through a simple command-line interface. It allows you to provision and manage baremetal servers, VPS instances, and more without needing to use the web interface.
 
 ## Features
 
 - **Baremetal Server Management**: List, deploy, power control, and manage your dedicated servers
+- **VPS Management**: Deploy, manage, and control virtual private servers across multiple datacenters
 - **Hourly Billing Support**: Deploy servers with hourly billing and cancel hourly-billed servers
 - **SSH Key Management**: Create, list, and manage SSH keys for server access
 - **Inventory Browsing**: View available hardware in different datacenters with hourly pricing options
@@ -74,11 +75,57 @@ ics-cli --help
 # List your baremetal servers
 ics-cli baremetal list
 
+# List your VPS servers
+ics-cli vps list
+
 # View version information
 ics-cli version
 ```
 
 ## Usage Examples
+
+### VPS Management
+
+```bash
+# List all VPS servers
+ics-cli vps list
+
+# List VPS servers grouped by datacenter
+ics-cli vps list --display datacenter
+
+# Get detailed information about a VPS
+ics-cli vps get [ServiceID]
+
+# Show root password when getting VPS details
+ics-cli vps get [ServiceID] --password
+
+# Power control
+ics-cli vps poweron [ServiceID]
+ics-cli vps poweroff [ServiceID]
+ics-cli vps reboot [ServiceID]
+
+# Cancel a VPS (IRREVERSIBLE - deletes all data)
+ics-cli vps cancel [ServiceID]
+```
+
+### Deploying a New VPS
+
+```bash
+# View available VPS plans
+ics-cli vps deploy list-plans
+
+# View available datacenters
+ics-cli vps deploy list-locations
+
+# View available operating systems for a location
+ics-cli vps deploy list-os "Chicago - G, US"
+
+# Deploy a VPS with monthly billing
+ics-cli vps deploy create --plan V2 --location "Chicago - G, US" --os "Ubuntu 22.04" --hostname web1 --friendlyname "Web Server 1"
+
+# Deploy a VPS with hourly billing and backups
+ics-cli vps deploy create --plan V4 --location "New York City - A, US" --os "Debian 11" --hostname db1 --bill-hourly --backups --friendlyname "Database Server"
+```
 
 ### Baremetal Server Management
 
