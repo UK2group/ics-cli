@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     name: Build Application
-    runs-on: ubuntu-latest
+    runs-on: linux_2c_8gb
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
